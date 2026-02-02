@@ -74,6 +74,16 @@
             25% { transform: scale(1.1) rotate(-5deg); }
             75% { transform: scale(1.1) rotate(5deg); }
         }
+        /* Fix input date en iPhone (Safari) */
+input[type="date"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 12px;
+    padding-right: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
     </style>
 </head>
 <body class="bg-gradient-to-br from-orange-50 to-red-50 min-h-screen p-4 md:p-8">
