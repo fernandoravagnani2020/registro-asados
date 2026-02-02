@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Asados 2026">
+    <meta name="description" content="Registra y analiza todos tus asados del año">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>🔥 Registro de Asados 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #ffd140 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .card { 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+        }
+        .card:hover { 
+            transform: translateY(-8px) scale(1.02); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        @media (max-width: 640px) {
+            .card:hover {
+                transform: none;
+            }
+            input:focus, select:focus, textarea:focus {
+                transform: scale(1);
+            }
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5),
+                         0 0 40px rgba(255, 255, 255, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
+        }
+        input, select, textarea {
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+        .fire-emoji {
+            display: inline-block;
+            animation: fireFlicker 1.5s ease-in-out infinite;
+        }
+        @keyframes fireFlicker {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-orange-50 to-red-50 min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-6 sm:mb-8 animate-fadeIn px-2">
+            <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold mb-2 sm:mb-3" style="color: #1a1a2e; text-shadow: 0 0 30px rgba(147, 51, 234, 0.6), 0 0 60px rgba(236, 72, 153, 0.4), 2px 2px 4px rgba(0,0,0,0.3);">
+                <span class="fire-emoji">🔥</span> Registro de Asados <span class="fire-emoji">🔥</span>
+            </h1>
+            <p class="text-gray-900 text-sm sm:text-lg font-bold opacity-90" style="text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">Tu parrillero personal • Seguimiento 2026</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex flex-col sm:flex-row gap-3 mb-8 bg-white/20 backdrop-blur-md rounded-2xl p-3 shadow-2xl">
+            <button onclick="showTab('registro')" id="tab-registro" class="w-full sm:flex-1 px-4 sm:px-6 py-4 rounded-xl font-bold text-base sm:text-lg transition shadow-lg btn-primary text-white">
+                📝 Nuevo Asado
+            </button>
+            <button onclick="showTab('historial')" id="tab-historial" class="w-full sm:flex-1 px-4 sm:px-6 py-4 rounded-xl bg-white/80 backdrop-blur-sm text-gray-700 font-bold text-base sm:text-lg hover:bg-white hover:shadow-lg transition">
+                📋 Historial
+            </button>
+            <button onclick="showTab('estadisticas')" id="tab-estadisticas" class="w-full sm:flex-1 px-4 sm:px-6 py-4 rounded-xl bg-white/80 backdrop-blur-sm text-gray-700 font-bold text-base sm:text-lg hover:bg-white hover:shadow-lg transition">
+                📊 Estadísticas
+            </button>
+        </div>
+
+        <!-- Tab: Registro -->
+        <div id="content-registro" class="tab-content">
+            <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-10 card border-4 border-white/50">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-6 sm:mb-8">Registrar Nuevo Asado</h2>
+                <form id="asadoForm" class="space-y-4 sm:space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2 sm:mb-3">📅 Fecha</label>
+                            <input type="date" id="fecha" class="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-purple-300 rounded-xl focus:ring-4 focus:ring-purple-400 focus:border-transparent shadow-sm font-semibold text-base" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2 sm:mb-3">⏰ Horario</label>
+                            <select id="horario" class="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-purple-300 rounded-xl focus:ring-4 focus:ring-purple-400 focus:border-transparent shadow-sm font-semibold text-base" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Almuerzo">☀️ Almuerzo</option>
+                                <option value="Cena">🌙 Cena</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2 sm:mb-3">🥩 Corte Principal</label>
+                            <select id="corte1" class="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-purple-300 rounded-xl focus:ring-4 focus:ring-purple-400 focus:border-transparent shadow-sm font-semibold text-base" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Costilla">Costilla</option>
+                                <option value="Vacío">Vacío</option>
+                                <option value="Cordero">Cordero</option>
+                                <option value="Pollo">Pollo</option>
+                                <option value="Falda">Falda</option>
+                                <option value="Matambre">Matambre</option>
+                                <option value="Chorizo">Chorizo</option>
+                                <option value="Entraña">Entraña</option>
+                                <option value="Tira de asado">Tira de asado</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-800 mb-2 sm:mb-3">🍖 Corte Secundario (opcional)</label>
+                            <select id="corte2" class="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-purple-300 rounded-xl focus:ring-4 focus:ring-purple-400 focus:border-transparent shadow-sm font-semibold text-base">
+                                <option value="">Ninguno</option>
+                                <option value="Costilla">Costilla</option>
+                                <option value="Vacío">Vacío</option>
+                                <option value="Cordero">Cordero</option>
+                                <option value="Pollo">Pollo</option>
+                                <option value="Falda">Falda</option>
+                                <option value="Matambre">Matambre</option>
+                                <option value="Chorizo">Chorizo</option>
+                                <option value="Entraña">Entraña</option>
+                                <option value="Tira de asado">Tira de asado</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-800 mb-2 sm:mb-3">💵 Gasto Aproximado ($)</label>
+                        <input type="number" id="gasto" class="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-purple-300 rounded-xl focus:ring-4 focus:ring-purple-400 focus:border-transparent shadow-sm font-bold text-lg" placeholder="0" min="0" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-800 mb-2 sm:mb-3">📝 Observaciones (opcional)</label>
+                        <textarea id="observaciones" class="w-full px-4 sm:px-5 py-3 sm:py-4 border-2 border-purple-300 rounded-xl focus:ring-4 focus:ring-purple-400 focus:border-transparent shadow-sm font-semibold text-base" rows="3" placeholder="Ej: Cumpleaños, amigos, evento especial..."></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full btn-primary text-white font-extrabold text-lg sm:text-xl py-4 sm:py-5 px-6 rounded-xl transition duration-200 shadow-2xl hover:shadow-purple-500/50">
+                        ✅ Registrar Asado
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab: Historial -->
+        <div id="content-historial" class="tab-content hidden">
+            <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-10 card border-4 border-white/50">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Historial de Asados</h2>
+                    <div class="flex gap-3 w-full sm:w-auto">
+                        <button onclick="sincronizarDatos()" class="flex-1 sm:flex-none bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-blue-500/50">
+                            🔄 Sincronizar
+                        </button>
+                        <button onclick="exportarDatos()" class="flex-1 sm:flex-none bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-green-500/50">
+                            📥 Exportar CSV
+                        </button>
+                    </div>
+                </div>
+                <div id="historialContainer" class="overflow-x-auto -mx-6 sm:mx-0">
+                    <table class="w-full min-w-[600px]">
+                        <thead class="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                            <tr>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold rounded-tl-xl">Fecha</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold">Horario</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold">Cortes</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold">Gasto</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold">Observaciones</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-bold rounded-tr-xl">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historialBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Estadísticas -->
+        <div id="content-estadisticas" class="tab-content hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                <!-- Resumen Cards -->
+                <div class="stat-card rounded-3xl shadow-2xl p-6 sm:p-8 card border-4 border-white/50 hover:border-purple-400">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-xs sm:text-sm font-bold uppercase tracking-wider mb-2">Total Asados</p>
+                            <p id="totalAsados" class="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">0</p>
+                        </div>
+                        <div class="text-5xl sm:text-6xl fire-emoji">🔥</div>
+                    </div>
+                </div>
+                <div class="stat-card rounded-3xl shadow-2xl p-6 sm:p-8 card border-4 border-white/50 hover:border-green-400">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-xs sm:text-sm font-bold uppercase tracking-wider mb-2">Gasto Total</p>
+                            <p id="gastoTotal" class="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">$0</p>
+                        </div>
+                        <div class="text-5xl sm:text-6xl">💰</div>
+                    </div>
+                </div>
+                <div class="stat-card rounded-3xl shadow-2xl p-6 sm:p-8 card border-4 border-white/50 hover:border-blue-400">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-xs sm:text-sm font-bold uppercase tracking-wider mb-2">Promedio x Asado</p>
+                            <p id="gastoPromedio" class="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">$0</p>
+                        </div>
+                        <div class="text-5xl sm:text-6xl">📊</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
+                <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-8 card border-4 border-white/50">
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4 sm:mb-6">Top Cortes Más Asados</h3>
+                    <canvas id="cortesChart"></canvas>
+                </div>
+                <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-8 card border-4 border-white/50">
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4 sm:mb-6">Asados por Horario</h3>
+                    <canvas id="horarioChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-8 card border-4 border-white/50">
+                <h3 class="text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4 sm:mb-6">Gastos Mensuales</h3>
+                <canvas id="gastosChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Google Sheets
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwr9bRafd7WZFyDvcdy1gkvVsKvBHTt_h0J7X8NGYz8IarTBrFfOZAcCq8y6bTI_z9EkQ/exec';
+        
+        // Initial data from Google Sheets
+        let asados = [];
+
+        // Cargar datos desde Google Sheets
+        async function cargarDatosDesdeGoogleSheets() {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await response.json();
+                
+                // Formatear fechas correctamente
+                asados = data.map(asado => ({
+                    ...asado,
+                    fecha: asado.fecha ? formatearFechaDesdeSheet(asado.fecha) : '',
+                    gasto: Number(asado.gasto) || 0
+                }));
+                
+                console.log('✅ Datos cargados desde Google Sheets:', asados.length, 'asados');
+            } catch (error) {
+                console.error('❌ Error al cargar datos desde Google Sheets:', error);
+                // Mantener datos locales si hay error
+            }
+        }
+        
+        // Formatear fecha desde Google Sheets
+        function formatearFechaDesdeSheet(fecha) {
+            if (!fecha) return '';
+            
+            // Si es string de fecha ISO
+            if (typeof fecha === 'string' && fecha.includes('-')) {
+                return fecha.split('T')[0];
+            }
+            
+            // Si es objeto Date o timestamp
+            const d = new Date(fecha);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Load from localStorage (backup)
+        const savedData = localStorage.getItem('asados');
+        if (savedData) {
+            asados = JSON.parse(savedData);
+        }
+
+        // Save to localStorage and Google Sheets
+        async function saveData() {
+            // Guardar localmente como backup
+            localStorage.setItem('asados', JSON.stringify(asados));
+        }
+        
+        // Guardar nuevo asado en Google Sheets
+        async function guardarEnGoogleSheets(asado) {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necesario para Google Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(asado)
+                });
+                
+                console.log('✅ Asado guardado en Google Sheets');
+                return true;
+            } catch (error) {
+                console.error('❌ Error al guardar en Google Sheets:', error);
+                return false;
+            }
+        }
+
+        // Set today's date as default
+        document.getElementById('fecha').valueAsDate = new Date();
+
+        // Tab Navigation
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('btn-primary', 'text-white', 'shadow-lg');
+                btn.classList.add('bg-white/80', 'backdrop-blur-sm', 'text-gray-700');
+            });
+            
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            const activeTab = document.getElementById(`tab-${tab}`);
+            activeTab.classList.remove('bg-white/80', 'backdrop-blur-sm', 'text-gray-700');
+            activeTab.classList.add('btn-primary', 'text-white', 'shadow-lg');
+            
+            if (tab === 'historial') renderHistorial();
+            if (tab === 'estadisticas') renderEstadisticas();
+        }
+
+        // Form Submit
+        document.getElementById('asadoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const nuevoAsado = {
+                fecha: document.getElementById('fecha').value,
+                horario: document.getElementById('horario').value,
+                corte1: document.getElementById('corte1').value,
+                corte2: document.getElementById('corte2').value,
+                gasto: parseFloat(document.getElementById('gasto').value),
+                observaciones: document.getElementById('observaciones').value
+            };
+            
+            // Mostrar mensaje de carga
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const textoOriginal = submitBtn.innerHTML;
+            submitBtn.innerHTML = '⏳ Guardando...';
+            submitBtn.disabled = true;
+            
+            // Guardar en Google Sheets
+            await guardarEnGoogleSheets(nuevoAsado);
+            
+            // Agregar a la lista local
+            asados.push(nuevoAsado);
+            saveData();
+            
+            // Reset form
+            this.reset();
+            document.getElementById('fecha').valueAsDate = new Date();
+            
+            // Restaurar botón
+            submitBtn.innerHTML = textoOriginal;
+            submitBtn.disabled = false;
+            
+            // Show success message
+            alert('✅ ¡Asado guardado en Google Sheets exitosamente!');
+        });
+
+        // Render Historial
+        function renderHistorial() {
+            const tbody = document.getElementById('historialBody');
+            tbody.innerHTML = '';
+            
+            // Sort by date (newest first)
+            const sortedAsados = [...asados].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            
+            sortedAsados.forEach((asado, index) => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-purple-100 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-300';
+                
+                const cortes = asado.corte2 ? `${asado.corte1}, ${asado.corte2}` : asado.corte1;
+                const gastoFormatted = asado.gasto === 0 ? '-' : `$${asado.gasto.toLocaleString()}`;
+                
+                row.innerHTML = `
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-base font-semibold">${new Date(asado.fecha + 'T00:00:00').toLocaleDateString('es-AR')}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-base font-semibold">${asado.horario}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-base font-bold text-purple-700">${cortes}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-base font-bold text-green-600">${gastoFormatted}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-base text-gray-700">${asado.observaciones || '-'}</td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4">
+                        <button onclick="eliminarAsado(${asados.indexOf(asado)})" class="text-red-600 hover:text-red-800 hover:scale-110 font-bold text-lg sm:text-xl transition transform">
+                            🗑️
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Sincronizar datos manualmente
+        async function sincronizarDatos() {
+            const prevCount = asados.length;
+            await cargarDatosDesdeGoogleSheets();
+            const newCount = asados.length;
+            
+            if (newCount > prevCount) {
+                alert(`✅ Sincronización exitosa! Se cargaron ${newCount - prevCount} nuevos asados.`);
+            } else {
+                alert('✅ Datos sincronizados. Todo actualizado!');
+            }
+            
+            // Actualizar vista si estamos en historial
+            if (!document.getElementById('content-historial').classList.contains('hidden')) {
+                renderHistorial();
+            }
+        }
+        
+        // Delete Asado (solo local - para eliminar de Google Sheets hay que hacerlo manualmente)
+        function eliminarAsado(index) {
+            if (confirm('⚠️ NOTA: Esto eliminará el asado solo de esta vista local.\n\nPara eliminarlo permanentemente de Google Sheets, tenés que borrarlo manualmente en la planilla.\n\n¿Continuar?')) {
+                asados.splice(index, 1);
+                saveData();
+                renderHistorial();
+            }
+        }
+
+        // Export to CSV
+        function exportarDatos() {
+            let csv = 'Fecha,Horario,Corte 1,Corte 2,Gasto,Observaciones\n';
+            asados.forEach(asado => {
+                csv += `${asado.fecha},${asado.horario},${asado.corte1},${asado.corte2},${asado.gasto},"${asado.observaciones}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `asados_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Render Statistics
+        function renderEstadisticas() {
+            // Summary Stats
+            const totalAsados = asados.length;
+            const gastoTotal = asados.reduce((sum, a) => sum + a.gasto, 0);
+            const gastoPromedio = totalAsados > 0 ? Math.round(gastoTotal / totalAsados) : 0;
+            
+            document.getElementById('totalAsados').textContent = totalAsados;
+            document.getElementById('gastoTotal').textContent = `$${gastoTotal.toLocaleString()}`;
+            document.getElementById('gastoPromedio').textContent = `$${gastoPromedio.toLocaleString()}`;
+            
+            // Top Cortes Chart
+            const cortesCount = {};
+            asados.forEach(a => {
+                cortesCount[a.corte1] = (cortesCount[a.corte1] || 0) + 1;
+                if (a.corte2) cortesCount[a.corte2] = (cortesCount[a.corte2] || 0) + 1;
+            });
+            
+            const topCortes = Object.entries(cortesCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            renderChart('cortesChart', 'bar', {
+                labels: topCortes.map(c => c[0]),
+                datasets: [{
+                    label: 'Cantidad',
+                    data: topCortes.map(c => c[1]),
+                    backgroundColor: [
+                        'rgba(147, 51, 234, 0.8)',
+                        'rgba(236, 72, 153, 0.8)',
+                        'rgba(249, 115, 22, 0.8)',
+                        'rgba(234, 179, 8, 0.8)',
+                        'rgba(59, 130, 246, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(147, 51, 234)',
+                        'rgb(236, 72, 153)',
+                        'rgb(249, 115, 22)',
+                        'rgb(234, 179, 8)',
+                        'rgb(59, 130, 246)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 10
+                }]
+            });
+            
+            // Horario Chart
+            const horarioCount = { 'Almuerzo': 0, 'Cena': 0 };
+            asados.forEach(a => horarioCount[a.horario]++);
+            
+            renderChart('horarioChart', 'doughnut', {
+                labels: ['Almuerzo', 'Cena'],
+                datasets: [{
+                    data: [horarioCount.Almuerzo, horarioCount.Cena],
+                    backgroundColor: [
+                        'rgba(251, 191, 36, 0.9)',
+                        'rgba(139, 92, 246, 0.9)'
+                    ],
+                    borderColor: [
+                        'rgb(251, 191, 36)',
+                        'rgb(139, 92, 246)'
+                    ],
+                    borderWidth: 3
+                }]
+            });
+            
+            // Gastos por Mes
+            const gastosMensuales = {};
+            asados.forEach(a => {
+                const mes = a.fecha.substring(0, 7);
+                gastosMensuales[mes] = (gastosMensuales[mes] || 0) + a.gasto;
+            });
+            
+            const meses = Object.keys(gastosMensuales).sort();
+            
+            renderChart('gastosChart', 'line', {
+                labels: meses.map(m => {
+                    const [year, month] = m.split('-');
+                    return new Date(year, month - 1).toLocaleDateString('es-AR', { month: 'short', year: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Gasto ($)',
+                    data: meses.map(m => gastosMensuales[m]),
+                    borderColor: 'rgb(147, 51, 234)',
+                    backgroundColor: 'rgba(147, 51, 234, 0.2)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 3,
+                    pointRadius: 6,
+                    pointBackgroundColor: 'rgb(236, 72, 153)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 8
+                }]
+            });
+        }
+
+        let charts = {};
+        function renderChart(canvasId, type, data) {
+            const ctx = document.getElementById(canvasId);
+            if (charts[canvasId]) charts[canvasId].destroy();
+            
+            charts[canvasId] = new Chart(ctx, {
+                type: type,
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: type === 'doughnut' }
+                    }
+                }
+            });
+        }
+
+        // Initialize
+        async function inicializar() {
+            // Cargar datos desde Google Sheets
+            await cargarDatosDesdeGoogleSheets();
+            
+            // Mostrar tab inicial
+            showTab('registro');
+        }
+        
+        // Iniciar cuando cargue la página
+        window.addEventListener('DOMContentLoaded', inicializar);
+        
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('✅ Service Worker registrado'))
+                .catch(err => console.log('❌ Error al registrar Service Worker:', err));
+        }
+    </script>
+</body>
+</html>
